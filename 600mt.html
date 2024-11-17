@@ -356,15 +356,15 @@ console.log("Assigned Colors:", categoryColors);
 
     node.append("title").text(d => d.id);
 
-    // //zoom
-//     const zoom = d3.zoom()
-//   .scaleExtent([0.5, 3]) // Allow zoom between 50% and 300%
-//   .on("zoom", (event) => {
-//     svg.attr("transform", event.transform);
-//   });
+    //zoom
+    const zoom = d3.zoom()
+  .scaleExtent([0.5, 3]) // Allow zoom between 50% and 300%
+  .on("zoom", (event) => {
+    svg.attr("transform", event.transform);
+  });
 
 
-// svg.call(zoom);
+svg.call(zoom);
 
     function ticked() {
       link.attr("x1", d => d.source.x)
