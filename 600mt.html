@@ -318,7 +318,7 @@ console.log("Assigned Colors:", categoryColors);
       .attr("x", d => d.x - 10)
       .attr("y", d => d.y - 10)
       .on("click", (event, d) => {
-        infoPanel.html(`<strong>Node</strong><br>ID: ${d.id}<br>Group: ${d.group}`);
+        infoPanel.html(`<strong>Node</strong><br>${d.id}<br>Type: ${d.group}`);
         displayNodeImages(d.id);  // Display images for the clicked node
         closeButton.style("display", "block")
         imageContainer.style("display", "block")
@@ -346,7 +346,7 @@ console.log("Assigned Colors:", categoryColors);
       .text(d => d.id)
       .attr("data-size", d => d.category === "x" ? "9px" : "19px") // Set data-size attribute
       .on("click", (event, d) => {
-        infoPanel.html(`<strong>Node</strong><br>ID: ${d.id}<br>Group: ${d.group}`);
+        infoPanel.html(`<strong>Node</strong><br>${d.id}<br>Type: ${d.group}`);
         displayNodeImages(d.id);
         closeButton.style("display", "block")
         imageContainer.style("display", "block")

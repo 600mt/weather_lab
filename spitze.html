@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geo Points Overlay</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden; /* Prevent scrollbars */
+    }
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="container"></div>
+
+  <script>
+    const container = d3.select("#container")
+      .style("position", "relative")
+      .style("width", "100vw")
+      .style("height", "100vh");
+
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // Create a Mercator projection
+    const projection = d3.geoMercator()
+      .fitSize([width, height], {
+        type: "FeatureCollection",
+        features: [] // Placeholder, we'll fit dynamically
+      });
+
+    // SVG layer
+    const svg = container.append("svg")
+      .attr("class", "overlay")
+      .attr("width", width)
+      .attr("height", height)
+      .style("position", "absolute")
+      .style("top", "0")
+      .style("left", "0");
+
+    // Geo-coordinates for points (lat, lon)
+    const points = [
+      { lon: 7.2, lat: 46.1, id: "Breithorn" },
+      { lon: 7.5, lat: 46.2, id: "Lyskamm Orientale" },
+      { lon: 8.2, lat: 46.5, id: "Lyskamm Occidentale" },
+      { lon: 9.3, lat: 46.0, id: "Punta Vittoria" },
+      { lon: 5.5, lat: 45.8, id: "Roccia Nera" },
+    ];
+
+    // Update the projection to fit the points
+    projection.fitSize([width, height], {
+      type: "FeatureCollection",
+      features: points.map(d => ({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [d.lon, d.lat]
+        }
+      }))
+    });
+
+    // Calculate bounding box of the points
+    const [[x0, y0], [x1, y1]] = d3.geoPath(projection).bounds({
+      type: "FeatureCollection",
+      features: points.map(d => ({
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [d.lon, d.lat]
+        }
+      }))
+    });
+
+    // Compute the center and initial scale
+    const centerX = (x0 + x1) / 2;
+    const centerY = (y0 + y1) / 2;
+    const initialScale = Math.min(width / (x1 - x0), height / (y1 - y0)) * 0.8; // Zoom out 20%
+
+    // Create initial transform
+    const initialTransform = d3.zoomIdentity
+      .translate(width / 2, height / 2) // Center in the viewport
+      .scale(initialScale)
+      .translate(-centerX, -centerY); // Center on the points
+
+    // Add circles for the points
+    const circles = svg.selectAll("circle")
+      .data(points)
+      .enter()
+      .append("circle")
+      .attr("cx", d => projection([d.lon, d.lat])[0])
+      .attr("cy", d => projection([d.lon, d.lat])[1])
+      .attr("r", 8)
+      .style("fill", "none")
+      .style("stroke", "black")
+      .style("stroke-width", 1.5);
+
+    // Add labels for the points
+    const textLabels = svg.selectAll("text")
+      .data(points)
+      .enter()
+      .append("text")
+      .attr("x", d => projection([d.lon, d.lat])[0] + 3) // Offset slightly to the right of the circle
+      .attr("y", d => projection([d.lon, d.lat])[1])  // Center vertically
+      .text(d => `${d.id}`) // Display the ID
+      .style("font-size", "40px")
+      .style("fill", "black");
+
+    // Apply zoom and pan behavior
+    const zoom = d3.zoom()
+      .scaleExtent([1, 10]) // Min and max zoom levels
+      .on("zoom", (event) => {
+        const { transform } = event;
+        svg.style("transform", `translate(${transform.x}px, ${transform.y}px) scale(${transform.k})`);
+
+        // Update font size of labels proportionally
+        textLabels.style("font-size", `${40 / transform.k}px`);
+      });
+
+    // Attach zoom behavior to the container
+    d3.select(container.node())
+      .call(zoom)
+      .call(zoom.transform, initialTransform); // Apply the initial transform
+
+    // Update SVG dimensions on window resize
+    window.addEventListener("resize", () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      projection.fitSize([width, height], {
+        type: "FeatureCollection",
+        features: points.map(d => ({
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: [d.lon, d.lat]
+          }
+        }))
+      });
+      svg.attr("width", `${width}`).attr("height", `${height}`);
+
+      // Update circle and text positions
+      circles.attr("cx", d => projection([d.lon, d.lat])[0])
+             .attr("cy", d => projection([d.lon, d.lat])[1]);
+      textLabels.attr("x", d => projection([d.lon, d.lat])[0] + 10)
+                .attr("y", d => projection([d.lon, d.lat])[1] + 4);
+    });
+  </script>
+</body>
+</html>
