@@ -401,10 +401,10 @@ console.log("Assigned Colors:", categoryColors);
     window.addEventListener("resize", () => {
   const isMobile = window.innerWidth < 768;
   simulation.alpha(1).restart(); // Restart simulation with new settings
-  simulation.force("link").distance(isMobile ? 150 : 140);
+  simulation.force("link").distance(isMobile ? 100 : 140);
   simulation.force("charge").strength(isMobile ? -10 : -17);
-  simulation.force("center", d3.forceCenter(width /1, height / 40));
-  simulation.force("collision", d3.forceCollide().radius(window.innerWidth < 768 ? 200 : 10))
+  simulation.force("center", d3.forceCenter(width /1, height / 1));
+  simulation.force("collision", d3.forceCollide().radius(window.innerWidth < 768 ? 10 : 10))
 });
 
 
