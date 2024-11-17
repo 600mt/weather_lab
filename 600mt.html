@@ -242,17 +242,18 @@ console.log("Assigned Colors:", categoryColors);
       .data(links)
       .join("line")
       .attr("stroke-width", d => Math.sqrt(d.value) * 2)
+      .attr("stroke-dasharray", ("1, 7"))  // <== This line here!!
       .attr("stroke-linecap", "round")
 
     const node = svg.append("g")
-      .attr("stroke", "#ffffff")
+      .attr("stroke", "transparent")
       .attr("stroke-width", 0)
       .selectAll("rect")
       .data(nodes)
       .join("rect")
       .attr("width", 2)
       .attr("height", 2)
-      .attr("fill", "none")
+      .attr("fill", d => color(d.category))
       .attr("x", d => d.x - 10)
       .attr("y", d => d.y - 10)
       .on("click", (event, d) => {
