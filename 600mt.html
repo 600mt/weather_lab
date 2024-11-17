@@ -27,6 +27,19 @@
       margin:0;
     }
 
+    #close {
+      display:none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 7px 15px;
+      border-radius: 25px;
+      cursor: pointer;
+      z-index: 1000;
+      background: transparent;
+      box-shadow: none;
+    }
+
     #info-panel {
       position: fixed;
       width: 30vw;
@@ -39,7 +52,7 @@
       line-height: 1.4;
       overflow-y: auto; 
       max-height: 100vh;
-      opacity: 90%;
+      opacity: 100%;
       scrollbar-width: none; /* for Firefox */
       color:#000000;
     }
@@ -72,7 +85,8 @@
     top: 0; /* Stick to the top of the viewport */
     z-index: 10; /* Ensure it stays above other elements */
     line-height: 1.2em;
-    background-color: #ffffff;
+    background-color: transparent;
+    opacity:97%;
   }
 
   #chart-container {
@@ -89,6 +103,22 @@
   text:hover {
     font-size: 50px; /* Increase font size by 2px on hover */
   }
+
+  #close {
+      display:none;
+      position: fixed;
+      top: 94vh;
+      left:20px;
+      right: 20px;
+      padding: 7px 15px;
+      border-radius: 25px;
+      cursor: pointer;
+      z-index: 1000;
+      background: transparent;
+      box-shadow: none;
+    }
+
+
 }
 
   </style>
@@ -96,7 +126,8 @@
 <body>
   <div id="info-panel">
     <p> 600mt is a graphic design practice with a focus on mapping information within spatial contexts. </p>
-    <p id="info"> and this is a project archive <br>
+    <p id="info"> <br> 
+  <div>  <button id="close"> Close</button> </div>
     <!-- <p id="info"> -------------------------- <br>
     Click and drag the nodes to see details here. <br> The nodes of this color are loose categories, drag them and see which project follows </p> -->
     <div id="images"></div> <!-- Container for images -->
@@ -171,7 +202,6 @@
 }
 
 
-
  // Function to generate a random color
 function getRandomColor() {
   const letters = '0123456789ABCDEF';
@@ -229,11 +259,39 @@ console.log("Assigned Colors:", categoryColors);
 // const labelForce = d3.forceCollide(30); // Adjust radius as needed for spacing
 // simulation.force("label-collision", labelForce);
 
+ //SVG
+ 
+
     const svg = d3.select("svg");
 
-    const infoPanel = d3.select("#info");
+
+//infopanel
+
+    const infoPanel = d3.select("#info")
+        .style("background-color", "transparent");
+
+        
+//imagecontainer
+
     const imageContainer = d3.select("#images");
 
+
+//closebutton
+
+    // Initially hide the close button
+    d3.select("#close").style("display", "none");
+
+    const closeButton = d3.select("#close") //define closeButton
+        // .attr("fill", "color(d.category)")
+        .on("click", () => {
+        // Hide the node images and the info panel when the close button is clicked
+        imageContainer.style("display", "none")
+        closeButton.style("display", "none")  // Hide the close button itself
+        imageContainer.style("background-color", "transparent)")
+        infoPanel.style("display", "none")
+        });
+
+//links lines (edges)
 
     const link = svg.append("g")
       .attr("stroke", "transparent")
@@ -243,7 +301,9 @@ console.log("Assigned Colors:", categoryColors);
       .join("line")
       .attr("stroke-width", d => Math.sqrt(d.value) * 2)
       .attr("stroke-dasharray", ("1, 7"))  // <== This line here!!
-      .attr("stroke-linecap", "round")
+      .attr("stroke-linecap", "round");
+
+//nodes
 
     const node = svg.append("g")
       .attr("stroke", "transparent")
@@ -254,13 +314,19 @@ console.log("Assigned Colors:", categoryColors);
       .attr("width", 2)
       .attr("height", 2)
       .attr("fill", d => color(d.category))
+      .attr("opacity", 0.8)
       .attr("x", d => d.x - 10)
       .attr("y", d => d.y - 10)
       .on("click", (event, d) => {
         infoPanel.html(`<strong>Node</strong><br>ID: ${d.id}<br>Group: ${d.group}`);
         displayNodeImages(d.id);  // Display images for the clicked node
+        closeButton.style("display", "block")
+        imageContainer.style("display", "block")
+        imageContainer.style("background-color", "rgba(255, 255, 255, 0.9)");
       });
-      
+ 
+//labels texts
+
     const labels = svg.append("g")
       .selectAll("text")
       .data(nodes)
@@ -282,19 +348,23 @@ console.log("Assigned Colors:", categoryColors);
       .on("click", (event, d) => {
         infoPanel.html(`<strong>Node</strong><br>ID: ${d.id}<br>Group: ${d.group}`);
         displayNodeImages(d.id);
+        closeButton.style("display", "block")
+        imageContainer.style("display", "block")
+        imageContainer.style("background-color", "rgba(255, 255, 255, 0.9)");
       })
       .call(d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended));
 
     node.append("title").text(d => d.id);
 
-    const zoom = d3.zoom()
-  .scaleExtent([0.5, 3]) // Allow zoom between 50% and 300%
-  .on("zoom", (event) => {
-    svg.attr("transform", event.transform);
-  });
+    // //zoom
+//     const zoom = d3.zoom()
+//   .scaleExtent([0.5, 3]) // Allow zoom between 50% and 300%
+//   .on("zoom", (event) => {
+//     svg.attr("transform", event.transform);
+//   });
 
 
-svg.call(zoom);
+// svg.call(zoom);
 
     function ticked() {
       link.attr("x1", d => d.source.x)
@@ -330,9 +400,11 @@ svg.call(zoom);
 
     window.addEventListener("resize", () => {
   const isMobile = window.innerWidth < 768;
-  simulation.force("link").distance(isMobile ? 100 : 140);
-  simulation.force("charge").strength(isMobile ? -10 : -17);
   simulation.alpha(1).restart(); // Restart simulation with new settings
+  simulation.force("link").distance(isMobile ? 150 : 140);
+  simulation.force("charge").strength(isMobile ? -10 : -17);
+  simulation.force("center", d3.forceCenter(width /1, height / 40));
+  simulation.force("collision", d3.forceCollide().radius(window.innerWidth < 768 ? 200 : 10))
 });
 
 
@@ -348,9 +420,9 @@ svg.call(zoom);
   // Add the description text if it exists
   if (nodeData && nodeData.description) {
     imageContainer.append("p")
+      .style("display", "block")
       .style("font-size", "14px")
       .style("margin-bottom", "10px")
-      .style("color", " color(d.category)") // Adjust color as needed
       .style("line-height", d => window.innerWidth < 768 ? "1.2em" : "1.3em")
       .text(nodeData.description);
   }
