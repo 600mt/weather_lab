@@ -6,20 +6,37 @@
     <title>windwindwind</title>
     <style>
         body {
-            margin: 0;
             height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
             color: white;
-            background-color: white;
+            background-color: transparent;
             font-family: Arial, sans-serif;
-            position: relative; /* Allows absolute positioning of child elements */
         }
 
+        #info-panel {
+      position: fixed;
+      width: 30vw;
+      padding-left: 20px;
+      padding-bottom: 0px;
+      background: transparent;
+      font-family:'Times New Roman', Times, serif;
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.4;
+      overflow-y: auto; 
+      max-height: 100vh;
+      opacity: 100%;
+      scrollbar-width: none; /* for Firefox */
+      color: rgb(167, 49, 221);
+      justify-content: center;
+    }
+
+    #lines {
+        max-width: 90vw;
+
+    }
         .content {
             position: fixed;
-            text-align: center;
             z-index: 2; /* Ensure text content is above the line */
         }
 
@@ -42,31 +59,6 @@
             transition: transform 1.5s ease; /* Smooth rotation transition */
         }
 
-        #other {
-            position: relative;
-            bottom: -280px; /* Position it near the bottom */
-            left: 50%; /* Center it horizontally */
-            transform: translateX(-50%); /* Exactly center it */
-            color: rgb(167, 49, 221);
-            font-size: 1.3em;
-            font-family: 'Times New Roman', Times, serif;
-            z-index: 2; /* Ensure text is above the line */
-            background-color: lightblue;
-            width: 70vw;
-        }
-
-        #text {
-            position: relative;
-            bottom: -300px; /* Position it near the bottom */
-            left: 50%; /* Center it horizontally */
-            transform: translateX(-50%); /* Exactly center it */
-            color: rgb(167, 49, 221);
-            font-size: 1.3em;
-            font-family: 'Times New Roman', Times, serif;
-            z-index: 2; /* Ensure text is above the line */
-            background-color: lightblue;
-            width: 50vw;
-        }
 
         .stable-line-1 {
             position: absolute;
@@ -83,15 +75,36 @@
             position: absolute;
             left: 50%;
             top: 45%;
+            width:2px;
             bottom: 45%;
             border-radius: 3px; /* Adjust the border radius for rounded edges */
             border-left: 3px dotted rgb(167, 49, 221); /* Initial dashed border */
             z-index: 1; /* Line stays behind the content */
         }
+
+        @media (max-width: 768px) {
+  #info-panel {
+      position: relative;
+      width: 90vw;
+      justify-content: left;
+      background: transparent;
+      font-family:'Times New Roman', Times, serif;
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.3;
+      overflow-y: auto; 
+      max-height: 100vh;
+      opacity: 100%;
+      scrollbar-width: none; /* for Firefox */
+      color: rgb(167, 49, 221);
+    }
+
+
+}
     </style>
 </head>
 <body>
-    <div class="content">
+    <div class="content" id="info-panel">
         <!-- <p id="temperature">Loading...</p>
         // <p id="wind-speed">Wind Speed: Loading...</p> -->
         <p id="text"></p> 
@@ -100,11 +113,12 @@
             The exact stations can vary depending on the data provider (such as Open-Meteo, 
             KNMI, or other networks).  </p>
     </div>
-
-    <!-- Vertical Dashed Line in the middle -->
-    <div class="vertical-line"></div>
-    <div class="stable-line-1"></div>
-    <div class="stable-line-2"></div>
+    <container id="lines">
+        <!-- Vertical Dashed Line in the middle -->
+        <div class="vertical-line"></div>
+        <div class="stable-line-1"></div>
+        <div class="stable-line-2"></div>
+    </container>
 
     <script>
         // Set the API URL with the required data for wind speed, gusts, and direction
@@ -128,7 +142,7 @@
                 const windDirectionText = convertWindDirection(windDirection);
 
                 // Update the text content of wind speed, gusts, temperature, and wind direction
-                document.getElementById("text").textContent = `Wind direction has been calculated from U/V wind component vectors. At the moment... ${windSpeed} m/s da ${windDirectionText}`;
+                document.getElementById("text").textContent = `Wind direction has been calculated from U/V wind component vectors. At the moment... ${windSpeed} m/s from ${windDirectionText}`;
 
                 // Adjust the border-left (thickness of dashed line) based on the wind speed
                 adjustBorderLeft(windSpeed);
