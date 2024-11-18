@@ -60,13 +60,14 @@
         .vertical-line {
             position: absolute;
             height: calc(100% - 400px); /* 40px margin on top and bottom */
-            width: 5px;
+            width: 3px;
             left: 50%;
             top: 200px;
-            border-left: 2px solid rgb(34, 58, 165); /* Dotted border */
+            border-left: solid rgb(34, 58, 165); /* Dotted border */
             /* background-color: rgb(167, 49, 221); Add color to the vertical line */
             z-index: 0;
             transition: transform 1s ease;
+            filter: blur(1px);
 }
 
 
@@ -79,6 +80,7 @@
             border-top: 2px dotted rgb(34, 58, 165); /* Dotted border */
             /* background-color: rgb(167, 49, 221); Add color to the horizontal line */
             z-index: 0;
+            filter: blur(0.5px);
         }
 
         .stable-line-2 {
@@ -90,7 +92,9 @@
             border-left: 2px dotted rgb(34, 58, 165); /* Dotted border */
             /* background-color: rgb(167, 49, 221); Add color to the vertical line */
             z-index: 0;
+            filter: blur(0.5px);
         }
+
 
         @media (max-width: 768px) {
             #info-panel {
@@ -107,12 +111,7 @@
                 opacity: 100%;
                 scrollbar-width: none;
                 color: rgb(34, 58, 165);
-            }
-        }
-
-        @media (max-width: 480px) {
-            #lines {
-                width: 70vw;
+                filter: blur(0.5px);
             }
         }
     </style>
@@ -175,7 +174,7 @@
 
         function adjustBorderLeft(windSpeed) {
             const line = document.querySelector('.vertical-line');
-            const borderThickness = Math.min(windSpeed, 3); // Limiting the thickness to a max of 3px
+            const borderThickness = Math.min(windSpeed, 1); // Limiting the thickness to a max of 3px
             line.style.width = `${borderThickness}px`;
         }
 
