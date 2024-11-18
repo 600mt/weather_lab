@@ -9,17 +9,31 @@
             height: 100vh;
             display: flex;
             color: white;
-            background-color: transparent;
+            background-color:rgb(184, 188, 204);
             font-family: Arial, sans-serif;
+            filter: blur(0.5px);
         }
+
+        #text {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.2em;
+            transition: transform 1s ease;
+}
+
+
+        #other {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.2em;
+            transition: transform 1s ease;
+}
+            
 
         #info-panel {
             position: absolute;
-            width: 30vw;
+            width: 40vw;
             padding-left: 20px;
             padding-bottom: 0px;
             background: transparent;
-            font-family: 'Times New Roman', Times, serif;
             font-size: 14px;
             font-weight: 300;
             line-height: 1.4;
@@ -27,8 +41,9 @@
             max-height: 100vh;
             opacity: 100%;
             scrollbar-width: none;
-            color: rgb(167, 49, 221);
+            color: rgb(34, 58, 165);
             justify-content: center;
+            align-items: center;
         }
 
         #wind-speed, #wind-gusts, #wind-direction, #temperature {
@@ -43,7 +58,7 @@
             width: 5px;
             left: 50%;
             top: 200px;
-            border-left: 2px solid rgb(167, 49, 221); /* Dotted border */
+            border-left: 2px solid rgb(34, 58, 165); /* Dotted border */
             /* background-color: rgb(167, 49, 221); Add color to the vertical line */
             z-index: 0;
             transition: transform 1s ease;
@@ -56,7 +71,7 @@
             height: 1px;
             top: 50%;
             left: 20px;
-            border-top: 2px dotted rgb(167, 49, 221); /* Dotted border */
+            border-top: 2px dotted rgb(34, 58, 165); /* Dotted border */
             /* background-color: rgb(167, 49, 221); Add color to the horizontal line */
             z-index: 0;
         }
@@ -67,7 +82,7 @@
             width: 1px;
             left: 50%;
             top: 20px;
-            border-left: 2px dotted rgb(167, 49, 221); /* Dotted border */
+            border-left: 2px dotted rgb(34, 58, 165); /* Dotted border */
             /* background-color: rgb(167, 49, 221); Add color to the vertical line */
             z-index: 0;
         }
@@ -76,7 +91,7 @@
             #info-panel {
                 position: absolute;
                 width: 85vw;
-                justify-content: left;
+                justify-content: center;
                 background: transparent;
                 font-family:'Times New Roman', Times, serif;
                 font-size: 14px;
@@ -86,7 +101,7 @@
                 max-height: 100vh;
                 opacity: 100%;
                 scrollbar-width: none;
-                color: rgb(167, 49, 221);
+                color: rgb(34, 58, 165);
             }
         }
 
@@ -99,13 +114,8 @@
 </head>
 <body>
     <div id="info-panel">
-        <p id="text"></p>
-        <p id="other">
-            The wind direction and speed data around Rotterdam, as measured at a height of 10 meters, 
-            is most likely collected from several weather stations within the city's proximity. 
-            The exact stations can vary depending on the data provider (such as Open-Meteo, 
-            KNMI, or other networks).
-        </p>
+        <p id="text"> </p>
+
     </div>
     <div id="lines"> <!-- Change <container> to <div> -->
         <div class="vertical-line"></div>
@@ -130,10 +140,12 @@
                 const windDirection = data.current.wind_direction_10m;
                 const windDirectionText = convertWindDirection(windDirection);
 
-                document.getElementById("text").textContent = `Wind direction has been calculated from U/V wind component vectors. At the moment... ${windSpeed} m/s from ${windDirectionText}`;
+                document.getElementById("text").textContent = `At the moment the wind is blowing ${windSpeed} m/s from ${windDirectionText}. The wind direction and speed data are measured around Rotterdam (NL) at a height of 10 meters from the ground.
+            The information is most likely collected from several weather stations within the city's proximity.`;
 
                 adjustBorderLeft(windSpeed);
                 rotateLine(windDirection);
+                // rotateText(windDirection);
             })
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);
@@ -151,6 +163,11 @@
             return "North (N)";
         }
 
+        // function rotateText(degrees) {
+        //     const text = document.querySelector('#info-panel');
+        //     text.style.transform = `rotate(${degrees+90}deg)`;
+        // }
+
         function adjustBorderLeft(windSpeed) {
             const line = document.querySelector('.vertical-line');
             const borderThickness = Math.min(windSpeed, 3); // Limiting the thickness to a max of 3px
@@ -161,6 +178,7 @@
             const line = document.querySelector('.vertical-line');
             line.style.transform = `rotate(${degrees}deg)`;
         }
+
     </script>
 </body>
 </html>
