@@ -11,22 +11,14 @@
             color: white;
             background-color:rgb(184, 188, 204);
             font-family: Arial, sans-serif;
-            filter: blur(0.5px);
         }
+
 
         #text {
             font-family: 'Times New Roman', Times, serif;
             font-size: 1.2em;
             transition: transform 1s ease;
 }
-
-
-        #other {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 1.2em;
-            transition: transform 1s ease;
-}
-            
 
         #info-panel {
             position: absolute;
@@ -44,7 +36,20 @@
             color: rgb(34, 58, 165);
             justify-content: center;
             align-items: center;
+            filter: blur(0.5px);
+            transition: 3s ease-in-out;
         }
+
+        #info-panel:hover {
+            filter: blur(0px);
+            transition: 1s ease-in-out;
+        }
+
+        #info-panel:not(:hover) {
+            filter: blur(0.5px);
+            transition: 3s ease-in-out;
+        }
+
 
         #wind-speed, #wind-gusts, #wind-direction, #temperature {
             font-size: 20px;
@@ -140,7 +145,7 @@
                 const windDirection = data.current.wind_direction_10m;
                 const windDirectionText = convertWindDirection(windDirection);
 
-                document.getElementById("text").textContent = `At the moment the wind is blowing ${windSpeed} m/s from ${windDirectionText}. The wind direction and speed data are measured around Rotterdam (NL) at a height of 10 meters from the ground.
+                document.getElementById("text").innerHTML = `At the moment  <span style="text-decoration: underline;"> the wind is blowing ${windSpeed} m/s from ${windDirectionText}.</span> The wind direction and speed data are measured around Rotterdam (NL) at a height of 10 meters from the ground.
             The information is most likely collected from several weather stations within the city's proximity.`;
 
                 adjustBorderLeft(windSpeed);
