@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>windwindwind</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            background-color: white;
+            font-family: Arial, sans-serif;
+            position: relative; /* Allows absolute positioning of child elements */
+        }
+
+        .content {
+            position: fixed;
+            text-align: center;
+            z-index: 2; /* Ensure text content is above the line */
+        }
+
+        #wind-speed, #wind-gusts, #wind-direction, #temperature {
+            font-size: 20px;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        /* Create the vertical dashed line */
+        .vertical-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 5px; /* Default width */
+            border-radius: 3px; /* Adjust the border radius for rounded edges */
+            background-color: transparent; /* Remove solid background */
+            border-left: 0.5px 10px dashed rgb(254, 101, 93); /* Initial dashed border */
+            z-index: 1; /* Line stays behind the content */
+            transition: transform 1.5s ease; /* Smooth rotation transition */
+        }
+
+        #other {
+            position: relative;
+            bottom: -280px; /* Position it near the bottom */
+            left: 50%; /* Center it horizontally */
+            transform: translateX(-50%); /* Exactly center it */
+            color: rgb(167, 49, 221);
+            font-size: 1.3em;
+            font-family: 'Times New Roman', Times, serif;
+            z-index: 2; /* Ensure text is above the line */
+            background-color: lightblue;
+            width: 70vw;
+        }
+
+        #text {
+            position: relative;
+            bottom: -300px; /* Position it near the bottom */
+            left: 50%; /* Center it horizontally */
+            transform: translateX(-50%); /* Exactly center it */
+            color: rgb(167, 49, 221);
+            font-size: 1.3em;
+            font-family: 'Times New Roman', Times, serif;
+            z-index: 2; /* Ensure text is above the line */
+            background-color: lightblue;
+            width: 50vw;
+        }
+
+        .stable-line-1 {
+            position: absolute;
+            transform: rotate(90deg);
+            left: 50vw;
+            top: 0;
+            bottom: 0;
+            border-radius: 3px; /* Adjust the border radius for rounded edges */
+            border-left: 3px dotted rgb(167, 49, 221); /* Initial dashed border */
+            z-index: 1; /* Line stays behind the content */
+        }
+
+        .stable-line-2 {
+            position: absolute;
+            left: 50%;
+            top: 45%;
+            bottom: 45%;
+            border-radius: 3px; /* Adjust the border radius for rounded edges */
+            border-left: 3px dotted rgb(167, 49, 221); /* Initial dashed border */
+            z-index: 1; /* Line stays behind the content */
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <!-- <p id="temperature">Loading...</p>
+        // <p id="wind-speed">Wind Speed: Loading...</p> -->
+        <p id="text"></p> 
+        <p id="other"> The wind direction and speed data around Rotterdam, as measured at a height of 10 meters, 
+            is most likely collected from several weather stations within the city's proximity. 
+            The exact stations can vary depending on the data provider (such as Open-Meteo, 
+            KNMI, or other networks).  </p>
+    </div>
+
+    <!-- Vertical Dashed Line in the middle -->
+    <div class="vertical-line"></div>
+    <div class="stable-line-1"></div>
+    <div class="stable-line-2"></div>
+
+    <script>
+        // Set the API URL with the required data for wind speed, gusts, and direction
+        const apiUrl = 'https://api.open-meteo.com/v1/forecast?latitude=51.9225&longitude=4.4792&current=wind_speed_10m,wind_direction_10m&hourly=temperature_2m&timezone=Europe%2FBerlin';
+
+        let previousWindDirection = null; // Store previous wind direction
+
+
+        // Fetch data from Open-Meteo API
+        fetch(apiUrl)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Get current wind speed, gusts, temperature, and wind direction from the API response
+                const windSpeed = data.current.wind_speed_10m;
+                const windDirection = data.current.wind_direction_10m;
+                const windDirectionText = convertWindDirection(windDirection);
+
+                // Update the text content of wind speed, gusts, temperature, and wind direction
+                document.getElementById("text").textContent = `Wind direction has been calculated from U/V wind component vectors. At the moment... ${windSpeed} m/s da ${windDirectionText}`;
+
+                // Adjust the border-left (thickness of dashed line) based on the wind speed
+                adjustBorderLeft(windSpeed);
+
+                // Rotate the main vertical line based on current wind direction
+                rotateLine(windDirection);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+
+        // Function to convert wind direction from degrees to cardinal direction
+        function convertWindDirection(degrees) {
+            if (degrees >= 0 && degrees < 22.5) return "North (N)";
+            if (degrees >= 22.5 && degrees < 67.5) return "North-East (NE)";
+            if (degrees >= 67.5 && degrees < 112.5) return "East (E)";
+            if (degrees >= 112.5 && degrees < 157.5) return "South-East (SE)";
+            if (degrees >= 157.5 && degrees < 202.5) return "South (S)";
+            if (degrees >= 202.5 && degrees < 247.5) return "South-West (SW)";
+            if (degrees >= 247.5 && degrees < 292.5) return "West (W)";
+            if (degrees >= 292.5 && degrees < 337.5) return "North-West (NW)";
+            return "North (N)"; // For 360 degrees, it's considered North
+        }
+
+        // Function to adjust the border-left thickness based on wind speed
+        function adjustBorderLeft(windSpeed) {
+            const line = document.querySelector('.vertical-line');
+            // Adjust the thickness of the dashed border-left based on wind speed (max thickness of 10px)
+            const borderThickness = Math.min(windSpeed, 3); // Limiting the thickness to a max of 3px
+            line.style.borderLeft = `${borderThickness}px solid rgb(167, 49, 221)`;
+        }
+
+        // Function to rotate the vertical line based on wind direction
+        function rotateLine(degrees) {
+            const line = document.querySelector('.vertical-line');
+            // Apply rotation based on wind direction
+            line.style.transform = `rotate(${degrees}deg)`;
+        }
+    </script>
+</body>
+</html>
