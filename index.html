@@ -13,6 +13,20 @@
             background-color:rgb(184, 188, 204) 0.5;
             font-family: Arial, sans-serif;
         }
+        #intro {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.2em;
+            transition: transform 1s ease;
+            justify-content: center;
+            position: absolute;
+            width: 40vw;
+            padding-left: 20px;
+            background: transparent;
+            overflow-y: auto;
+            color: rgb(34, 58, 165);
+            filter: blur(0.5px);
+        }
+
         #text {
             font-family: 'Times New Roman', Times, serif;
             font-size: 1.2em;
@@ -84,7 +98,7 @@
         #altimetry {
             font-family: 'Times New Roman', Times, serif;
             font-size: 1.2em;
-            margin-top: 90vh;
+            margin-top: 85vh;
             position: absolute;
             width: 40vw;
             padding-left: 20px;
@@ -113,13 +127,37 @@
             }
 
             #altimetry {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.2em;
+            margin-top: 85vh;
+            position: absolute;
             width: 90vw;
+            padding-left: 20px;
+            background: transparent;
+            overflow-y: auto;
+            color: rgb(34, 58, 165);
+            filter: blur(0.5px);
+            transition: 3s ease-in-out;
             }
+
+            #intro {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 1.2em;
+            transition: transform 1s ease;
+            justify-content: center;
+            position: absolute;
+            width: 90vw;
+            padding-left: 20px;
+            background: transparent;
+            overflow-y: auto;
+            color: rgb(34, 58, 165);
+            filter: blur(0.5px);
         }
     </style>
 </head>
 <body>
-    <div id="info-panel">
+    <div>
+        <p id="intro"> Here and Now </p>
         <p id="text"> </p>
         <p id="altimetry"> </p>
     </div>
@@ -166,7 +204,7 @@
                     const windDirection = data.current.wind_direction_10m;
                     const windDirectionText = convertWindDirection(windDirection);
 
-                    document.getElementById("text").innerHTML = `Here and now, <span style="text-decoration: underline;">the wind is blowing ${windSpeed} m/s from ${windDirectionText}.</span>`;
+                    document.getElementById("text").innerHTML = `<span style="text-decoration: underline;">The wind is blowing ${windSpeed} m/s from ${windDirectionText}.</span>`;
                     
                     adjustBorderLeft(windSpeed);
                     rotateLine(windDirection);
@@ -249,7 +287,7 @@
                 }
 
                 if (currentAltitude !== null) {
-                    altitudeElement.textContent = `Here and now, you are at ${currentAltitude.toFixed(2)} meters above sea level`;
+                    altitudeElement.textContent = `And you are at ${currentAltitude.toFixed(2)} meters above sea level`;
                     moveHorizontalLine(currentAltitude);
                 } else {
                     altitudeElement.textContent = "Unable to retrieve altitude.";
