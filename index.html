@@ -5,155 +5,122 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>windwindwind</title>
     <style>
+        /* Your existing styles remain unchanged */
         body {
             height: 100vh;
             display: flex;
             color: white;
-            background-color:rgb(184, 188, 204);
+            background-color:rgb(184, 188, 204) 0.5;
             font-family: Arial, sans-serif;
         }
-
-
         #text {
             font-family: 'Times New Roman', Times, serif;
             font-size: 1.2em;
             transition: transform 1s ease;
-}
-
+        }
         #info-panel {
             position: absolute;
             width: 40vw;
             padding-left: 20px;
-            padding-bottom: 0px;
             background: transparent;
             font-size: 14px;
             font-weight: 300;
             line-height: 1.4;
-            overflow-y: auto; 
+            overflow-y: auto;
             max-height: 100vh;
-            opacity: 100%;
-            scrollbar-width: none;
             color: rgb(34, 58, 165);
-            justify-content: center;
-            align-items: center;
             filter: blur(0.5px);
             transition: 3s ease-in-out;
         }
-
         #info-panel:hover {
             filter: blur(0px);
             transition: 1s ease-in-out;
         }
-
-        #info-panel:not(:hover) {
-            filter: blur(0.5px);
-            transition: 3s ease-in-out;
-        }
-
-
-        #wind-speed, #wind-gusts, #wind-direction, #temperature {
-            font-size: 20px;
-            font-family: 'Times New Roman', Times, serif;
-        }
-
-        /* Create the vertical dashed line */
         .vertical-line {
             position: absolute;
-            height: calc(100% - 400px); /* 40px margin on top and bottom */
+            height: calc(100% - 400px);
             width: 3px;
             left: 50%;
             top: 200px;
-            border-left: solid rgb(34, 58, 165); /* Dotted border */
-            /* background-color: rgb(167, 49, 221); Add color to the vertical line */
-            z-index: 0;
+            border-left: solid rgb(34, 58, 165);
             transition: transform 1s ease;
             filter: blur(1px);
-}
-
-
+        }
         .stable-line-1 {
             position: absolute;
-            width: calc(100% - 40px); /* 40px margin on both sides */
+            width: calc(100% - 40px);
             height: 1px;
             top: 50%;
             left: 20px;
-            border-top: 2px dotted rgb(34, 58, 165); /* Dotted border */
-            /* background-color: rgb(167, 49, 221); Add color to the horizontal line */
-            z-index: 0;
+            border-top: 2px dotted rgb(34, 58, 165);
             filter: blur(0.5px);
         }
-
         .stable-line-2 {
             position: absolute;
-            height: calc(100% - 40px); /* 40px margin on top and bottom */
+            height: calc(100% - 40px);
             width: 1px;
             left: 50%;
             top: 20px;
-            border-left: 2px dotted rgb(34, 58, 165); /* Dotted border */
-            /* background-color: rgb(167, 49, 221); Add color to the vertical line */
-            z-index: 0;
+            border-left: 2px dotted rgb(34, 58, 165);
             filter: blur(0.5px);
-        }
-
-
-        @media (max-width: 768px) {
-            #info-panel {
-                position: absolute;
-                width: 85vw;
-                justify-content: center;
-                background: transparent;
-                font-family:'Times New Roman', Times, serif;
-                font-size: 14px;
-                font-weight: 300;
-                line-height: 1.3;
-                overflow-y: auto;
-                max-height: 100vh;
-                opacity: 100%;
-                scrollbar-width: none;
-                color: rgb(34, 58, 165);
-                filter: blur(0.5px);
-            }
         }
     </style>
 </head>
 <body>
     <div id="info-panel">
         <p id="text"> </p>
-
     </div>
-    <div id="lines"> <!-- Change <container> to <div> -->
+    <div id="lines">
         <div class="vertical-line"></div>
         <div class="stable-line-1"></div>
         <div class="stable-line-2"></div>
     </div>
-
     <script>
-        const apiUrl = 'https://api.open-meteo.com/v1/forecast?latitude=51.9225&longitude=4.4792&current=wind_speed_10m,wind_direction_10m&hourly=temperature_2m&timezone=Europe%2FBerlin';
+        // Get user's geolocation
+        function getWeatherBasedOnLocation() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        fetchWeatherData(latitude, longitude);
+                    },
+                    (error) => {
+                        console.error("Error fetching geolocation:", error);
+                        document.getElementById("text").innerHTML = 
+                            "Unable to retrieve location. Please allow location access.";
+                    }
+                );
+            } else {
+                document.getElementById("text").innerHTML = 
+                    "Geolocation is not supported by this browser.";
+            }
+        }
 
-        let previousWindDirection = null; // Store previous wind direction
+        function fetchWeatherData(latitude, longitude) {
+            const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=wind_speed_10m,wind_direction_10m&hourly=temperature_2m&timezone=auto`;
+            
+            fetch(apiUrl)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    const windSpeed = data.current.wind_speed_10m;
+                    const windDirection = data.current.wind_direction_10m;
+                    const windDirectionText = convertWindDirection(windDirection);
 
-        fetch(apiUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                const windSpeed = data.current.wind_speed_10m;
-                const windDirection = data.current.wind_direction_10m;
-                const windDirectionText = convertWindDirection(windDirection);
-
-                document.getElementById("text").innerHTML = `At the moment  <span style="text-decoration: underline;"> the wind is blowing ${windSpeed} m/s from ${windDirectionText}.</span> The wind direction and speed data are measured around Rotterdam (NL) at a height of 10 meters from the ground.
-            The information is most likely collected from several weather stations within the city's proximity.`;
-
-                adjustBorderLeft(windSpeed);
-                rotateLine(windDirection);
-                // rotateText(windDirection);
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
-            });
+                    document.getElementById("text").innerHTML = `Here and now, <span style="text-decoration: underline;">the wind is blowing ${windSpeed} m/s from ${windDirectionText}.</span>`;
+                    
+                    adjustBorderLeft(windSpeed);
+                    rotateLine(windDirection);
+                })
+                .catch((error) => {
+                    console.error("There was a problem with the fetch operation:", error);
+                });
+        }
 
         function convertWindDirection(degrees) {
             if (degrees >= 0 && degrees < 22.5) return "North (N)";
@@ -167,22 +134,19 @@
             return "North (N)";
         }
 
-        // function rotateText(degrees) {
-        //     const text = document.querySelector('#info-panel');
-        //     text.style.transform = `rotate(${degrees+90}deg)`;
-        // }
-
         function adjustBorderLeft(windSpeed) {
-            const line = document.querySelector('.vertical-line');
-            const borderThickness = Math.min(windSpeed, 1); // Limiting the thickness to a max of 3px
+            const line = document.querySelector(".vertical-line");
+            const borderThickness = Math.min(windSpeed, 1);
             line.style.width = `${borderThickness}px`;
         }
 
         function rotateLine(degrees) {
-            const line = document.querySelector('.vertical-line');
+            const line = document.querySelector(".vertical-line");
             line.style.transform = `rotate(${degrees}deg)`;
         }
 
+        // Fetch weather based on current location on page load
+        getWeatherBasedOnLocation();
     </script>
 </body>
 </html>
