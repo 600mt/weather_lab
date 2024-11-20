@@ -84,11 +84,13 @@
 </head>
 <body>
     <div id="info-panel">
-        <p>Tracking your altitude dynamically based on device or external data sources.</p>
-        <div id="altimetry">Fetching altitude...</div>
+        <p> </p>
+        <div id="altimetry"></div>
     </div>
     <div class="horizontal-line"></div>
-    <div class="stable-line-1"></div>
+    <div class="stable-line-1"> 
+    <div class="stable-line-2"> 
+    </div>
 
     <script>
         const altitudeElement = document.getElementById('altimetry');
@@ -110,8 +112,10 @@
         function moveHorizontalLine(altitude) {
             const viewportHeight = window.innerHeight;
             const maxAltitude = 1000; // Adjust based on expected altitudes in your area
-            const verticalPosition = Math.max(0, Math.min((altitude / maxAltitude) * viewportHeight, viewportHeight));
-            horizontalLine.style.top = `${verticalPosition}px`;
+            const verticalPosition = Math.max( 0, Math.min(viewportHeight - (altitude / maxAltitude) * viewportHeight, viewportHeight)
+    );
+
+    horizontalLine.style.top = `${verticalPosition}px`;
         }
 
         // Main function to get altitude data
@@ -127,7 +131,7 @@
                 }
 
                 if (currentAltitude !== null) {
-                    altitudeElement.textContent = `Altitude: ${currentAltitude.toFixed(2)} meters`;
+                    altitudeElement.textContent = `Here and now, you are at ${currentAltitude.toFixed(2)} meters above sea level`;
                     moveHorizontalLine(currentAltitude);
                 } else {
                     altitudeElement.textContent = "Unable to retrieve altitude.";
