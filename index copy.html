@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPX Progress Tracker</title>
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: rgb(34, 58, 165);
+            background-color: rgb(184, 188, 204);
+            font-family: Arial, sans-serif;
+            margin: 0;
+        }
+        #info-panel {
+            width: 80vw;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 16px;
+            line-height: 1.5;
+            text-align: center;
+        }
+        #progress-bar {
+            width: 100%;
+            background-color: #ddd;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        #progress-bar-fill {
+            height: 24px;
+            width: 0;
+            background-color: rgb(34, 165, 58);
+            border-radius: 8px;
+            transition: width 0.5s ease;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="info-panel">
+        <h1>GPX Progress Tracker</h1>
+        <p>Tracking your progress along the predefined GPX route.</p>
+        <div id="progress-bar">
+            <div id="progress-bar-fill"></div>
+        </div>
+        <p id="progress-text">Progress: 0%</p>
+        <p id="error-message" class="error"></p>
+    </div>
+    <script>
+        const gpxFilePath = "/gpx/percorso.gpx"; // Predefined GPX file path
+        let gpxCoordinates = [];
+        let destination = null;
+
+        // Fetch and parse the GPX file
+        function loadGPX() {
+            fetch(gpxFilePath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Failed to load GPX file.");
+                    }
+                    return response.text();
+                })
+                .then(gpxContent => {
+                    const parser = new DOMParser();
+                    const gpx = parser.parseFromString(gpxContent, "application/xml");
+                    const points = gpx.querySelectorAll("trkpt");
+                    gpxCoordinates = Array.from(points).map(pt => ({
+                        lat: parseFloat(pt.getAttribute("lat")),
+                        lon: parseFloat(pt.getAttribute("lon"))
+                    }));
+                    destination = gpxCoordinates[gpxCoordinates.length - 1];
+                    document.getElementById('error-message').textContent = "";
+                    getLiveLocation(); // Start tracking progress
+                })
+                .catch(error => {
+                    document.getElementById('error-message').textContent = error.message;
+                });
+        }
+
+        // Request live location
+        function getLiveLocation() {
+            if (!destination || gpxCoordinates.length === 0) {
+                document.getElementById('error-message').textContent = "GPX data is not loaded.";
+                return;
+            }
+
+            if ("geolocation" in navigator) {
+                navigator.geolocation.watchPosition(
+                    (position) => {
+                        const currentLocation = {
+                            lat: position.coords.latitude,
+                            lon: position.coords.longitude
+                        };
+                        updateProgress(currentLocation);
+                    },
+                    (error) => {
+                        document.getElementById('error-message').textContent = "Error retrieving location: " + error.message;
+                    }
+                );
+            } else {
+                document.getElementById('error-message').textContent = "Geolocation is not supported by your browser.";
+            }
+        }
+
+        // Calculate distance between two coordinates using Haversine formula
+        function calculateDistance(coord1, coord2) {
+            const R = 6371; // Earth radius in km
+            const dLat = (coord2.lat - coord1.lat) * (Math.PI / 180);
+            const dLon = (coord2.lon - coord1.lon) * (Math.PI / 180);
+            const lat1 = coord1.lat * (Math.PI / 180);
+            const lat2 = coord2.lat * (Math.PI / 180);
+
+            const a = Math.sin(dLat / 2) ** 2 +
+                      Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // Distance in km
+        }
+
+        // Update progress based on live location
+        function updateProgress(currentLocation) {
+            let totalDistance = 0;
+            let distanceTravelled = 0;
+
+            // Calculate total distance and travelled distance along the GPX path
+            for (let i = 0; i < gpxCoordinates.length - 1; i++) {
+                const segmentDistance = calculateDistance(gpxCoordinates[i], gpxCoordinates[i + 1]);
+                totalDistance += segmentDistance;
+                if (!distanceTravelled && calculateDistance(currentLocation, gpxCoordinates[i]) < 0.05) {
+                    distanceTravelled += segmentDistance;
+                }
+            }
+
+            // Add distance from the last point to the destination
+            totalDistance += calculateDistance(gpxCoordinates[gpxCoordinates.length - 1], destination);
+            distanceTravelled += calculateDistance(currentLocation, destination);
+
+            // Calculate progress percentage
+            const progress = Math.min((distanceTravelled / totalDistance) * 100, 100);
+            document.getElementById('progress-text').textContent = `Progress: ${progress.toFixed(2)}%`;
+            document.getElementById('progress-bar-fill').style.width = `${progress}%`;
+        }
+
+        // Load the GPX file and start tracking
+        loadGPX();
+    </script>
+</body>
+</html>
